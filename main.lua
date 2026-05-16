@@ -79,6 +79,8 @@ function love.load()
     love.window.setTitle("Retro Maze Chase")
     love.window.setMode(300, 350) -- Extra 50px at the bottom for UI
     loadLevel(currentLevel)
+    player.moveTimer = 0          -- Tracks time passed
+    player.moveCooldown = 0.2     -- Seconds between moves (0.2 = 5 moves per second)
 end
 
 -- Load and setup a level layout
@@ -121,19 +123,38 @@ end
 -- Handle input and game logic
 function love.update(dt)
     if gameState == "playing" then
-        -- Player Movement (Grid based with arrow keys and WASD)
-        local nextX = player.x
-        local nextY = player.y
+        -- Increase the timer by the time passed since the last frame
+        player.moveTimer = player.moveTimer + dt
 
-        if love.keyboard.isDown("up") or love.keyboard.isDown("w") then nextY = player.y - 1 end
-        if love.keyboard.isDown("down") or love.keyboard.isDown("s") then nextY = player.y + 1 end
-        if love.keyboard.isDown("left") or love.keyboard.isDown("a") then nextX = player.x - 1 end
-        if love.keyboard.isDown("right") or love.keyboard.isDown("d") then nextX = player.x + 1 end
+        -- Only checks for movement if enough time has passed
+        if player.moveTimer >= player.moveCooldown then
+            local nextX = player.x
+            local nextY = player.y
+            local moved = false
 
-        -- Checks boundaries and collision
-        if currentMap[nextY] and currentMap[nextY][nextX] == 0 then
-            player.x = nextX
-            player.y = nextY
+            if love.keyboard.isDown("up") or love.keyboard.isDown("w") then
+                nextY = player.y - 1
+                moved = true
+            elseif love.keyboard.isDown("down") or love.keyboard.isDown("s") then
+                nextY = player.y + 1
+                moved = true
+            elseif love.keyboard.isDown("left") or love.keyboard.isDown("a") then
+                nextX = player.x - 1
+                moved = true
+            elseif love.keyboard.isDown("right") or love.keyboard.isDown("d") then
+                nextX = player.x + 1
+                moved = true
+            end
+
+            -- Checks boundaries and collision
+            if moved then
+                if currentMap[nextY] and currentMap[nextY][nextX] == 0 then
+                    player.x = nextX
+                    player.y = nextY
+                end
+                -- Reset the timer after an attempted move
+                player.moveTimer = 0
+            end
         end
 
         -- Collect coins
