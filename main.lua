@@ -121,7 +121,7 @@ end
 -- Handle input and game logic
 function love.update(dt)
     if gameState == "playing" then
-        -- Player Movement (Grid based with arrow keys)
+        -- Player Movement (Grid based with arrow keys and WASD)
         local nextX = player.x
         local nextY = player.y
 
@@ -130,7 +130,7 @@ function love.update(dt)
         if love.keyboard.isDown("left") or love.keyboard.isDown("a") then nextX = player.x - 1 end
         if love.keyboard.isDown("right") or love.keyboard.isDown("d") then nextX = player.x + 1 end
 
-        -- Check boundaries and collision
+        -- Checks boundaries and collision
         if currentMap[nextY] and currentMap[nextY][nextX] == 0 then
             player.x = nextX
             player.y = nextY
@@ -161,7 +161,7 @@ function love.update(dt)
             end
         end
 
-        -- Enemy catch player
+        -- When the enemy catches player
         if enemy.x == player.x and enemy.y == player.y then
             player.lives = player.lives - 1
             if player.lives <= 0 then
@@ -174,5 +174,76 @@ function love.update(dt)
                 enemy.y = 13
             end
         end
+    end
+end
+
+-- Render graphics
+function love.draw()
+    -- Title Screen
+    if gameState == "title" then
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("RETRO MAZE CHASE", 0, 100, 300, "center")
+        love.graphics.printf("Press SPACE to Start", 0, 150, 300, "center")
+
+        -- Playing State
+    elseif gameState == "playing" then
+        -- Draw Walls
+        love.graphics.setColor(0.3, 0.5, 0.9)
+        for r = 1, #currentMap do
+            for c = 1, #currentMap[r] do
+                if currentMap[r][c] == 1 then
+                    love.graphics.rectangle("fill", (c - 1) * gridSize, (r - 1) * gridSize, gridSize - 1, gridSize - 1)
+                end
+            end
+        end
+
+        -- Coin Graphic
+        love.graphics.setColor(1, 0.8, 0.2)
+        for _, coin in ipairs(coins) do
+            love.graphics.circle("fill", (coin.c - 1) * gridSize + 10, (coin.r - 1) * gridSize + 10, 3)
+        end
+
+        -- Player Graphic
+        love.graphics.setColor(1, 1, 0)
+        love.graphics.rectangle("fill", (player.x - 1) * gridSize + 2, (player.y - 1) * gridSize + 2, 16, 16)
+
+        -- Enemy Graphic
+        love.graphics.setColor(1, 0.2, 0.2)
+        love.graphics.rectangle("fill", (enemy.x - 1) * gridSize + 2, (enemy.y - 1) * gridSize + 2, 16, 16)
+
+        -- UI (Bottom HUD)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.print("Score: " .. score, 10, 310)
+        love.graphics.print("Lives: " .. player.lives, 230, 310)
+
+        -- Win State
+    elseif gameState == "win" then
+        love.graphics.setColor(0, 1, 0)
+        love.graphics.printf("YOU WIN!", 0, 100, 300, "center")
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("Final Score: " .. score, 0, 140, 300, "center")
+        love.graphics.printf("Press R to Restart", 0, 180, 300, "center")
+
+        -- Game Over State
+    elseif gameState == "gameover" then
+        love.graphics.setColor(1, 0, 0)
+        love.graphics.printf("GAME OVER", 0, 100, 300, "center")
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("Final Score: " .. score, 0, 140, 300, "center")
+        love.graphics.printf("Press R to Restart", 0, 180, 300, "center")
+    end
+end
+
+-- Button Presses
+function love.keypressed(key)
+    if gameState == "title" and key == "space" then
+        gameState = "playing"
+    elseif (gameState == "win" or gameState == "gameover") and key == "r" then
+        -- Reset game variables
+        score = 0
+        currentLevel = 1
+        player.lives = 3
+        loadLevel(currentLevel)
+        gameState = "playing"
     end
 end
