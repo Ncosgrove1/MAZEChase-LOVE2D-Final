@@ -70,3 +70,41 @@ local levels = {
         { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
     }
 }
+
+local currentMap = {}
+local coins = {}
+
+-- Load game configuration
+function love.load()
+    love.window.setTitle("Retro Maze Chase")
+    love.window.setMode(300, 350) -- Extra 50px at the bottom for UI
+    loadLevel(currentLevel)
+end
+
+-- Load and setup a level layout
+function loadLevel(levelIndex)
+    -- Reset map
+    currentMap = {}
+    coins = {}
+
+    local sourceMap = levels[levelIndex]
+    for r = 1, #sourceMap do
+        currentMap[r] = {}
+        for c = 1, #sourceMap[r] do
+            currentMap[r][c] = sourceMap[r][c]
+            -- Places coin on path spaces
+            if sourceMap[r][c] == 0 then
+                table.insert(coins, { r = r, c = c })
+            end
+        end
+    end
+
+    -- Reset positions
+    player.x = 2
+    player.y = 2
+    enemy.x = 13
+    enemy.y = 13
+end
+
+-- Checks if coins are all collected
+function checkWinCondition()
