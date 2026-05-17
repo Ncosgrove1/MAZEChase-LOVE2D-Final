@@ -80,7 +80,7 @@ function love.load()
     love.window.setMode(300, 350) -- Extra 50px at the bottom for UI
     loadLevel(currentLevel)
     player.moveTimer = 0          -- Tracks time passed
-    player.moveCooldown = 0.2     -- Seconds between moves (0.2 = 5 moves per second)
+    player.moveCooldown = 0.1     -- Seconds between moves (0.1 = 10 moves per second)
 end
 
 -- Load and setup a level layout
@@ -169,7 +169,7 @@ function love.update(dt)
 
         -- Enemy AI (Simple chase)
         enemy.timer = enemy.timer + dt
-        if enemy.timer > 0.3 then
+        if enemy.timer > 0.25 then
             enemy.timer = 0
             if enemy.x < player.x and currentMap[enemy.y][enemy.x + 1] == 0 then
                 enemy.x = enemy.x + 1
